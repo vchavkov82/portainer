@@ -1,0 +1,88 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: linkwarden_pg
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    restart: always
+    shm_size: '1g'
+    volumes:
+      - ${LINK_DIR}/pgdata:/var/lib/postgresql/data
+    networks:
+      - linkwarden_net
+    command: >
+      postgres
+      -c max_connections=200
+      -c shared_buffers=4GB
+      -c effective_cache_size=12GB
+      -c work_mem=64MB
+      -c maintenance_work_mem=512MB
+      -c wal_buffers=64MB
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+      -c max_worker_processes=8
+      -c max_parallel_workers_per_gather=4
+      -c max_parallel_workers=8
+      -c max_parallel_maintenance_workers=4
+      -c idle_in_transaction_session_timeout=300000
+      -c tcp_keepalives_idle=600
+      -c tcp_keepalives_interval=30
+      -c tcp_keepalives_count=10
+      -c log_min_duration_statement=1000
+      -c huge_pages=try
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 16G
+        reservations:
+          memory: 8G
+
+  linkwarden:
+    container_name: linkwarden
+    environment:
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres?connection_limit=50&pool_timeout=30
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL}
+      - CUSTOM_OPENAI_BASE_URL=${CUSTOM_OPENAI_BASE_URL}
+      - NEXT_PUBLIC_DISABLE_REGISTRATION=true
+      - BROWSER_TIMEOUT=15000
+      - BACKGROUND_PROCESS_TIMEOUT=20000
+      - AUTOSCROLL_TIMEOUT=15
+      - ARCHIVE_TAKE_COUNT=5
+      - IGNORE_UNAUTHORIZED_CA=true
+      - NEXT_PUBLIC_MAX_FILE_BUFFER=10485760
+      - NEXT_PUBLIC_MAX_LINKS_PER_USER=0
+      - NODE_OPTIONS=--max-old-space-size=4096
+    restart: always
+    image: docker.svc.assistance.bg:5000/assistance/linkwarden:latest
+    ports:
+      - 3000:3000
+    volumes:
+      - ${LINK_DIR}/data:/data/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G
+    networks:
+      - linkwarden_net
+
+networks:
+  linkwarden_net:
+    name: linkwarden_net
+    driver: bridge
+

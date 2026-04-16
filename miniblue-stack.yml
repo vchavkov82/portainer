@@ -1,0 +1,17 @@
+services:
+  miniblue:
+    image: moabukar/miniblue:latest
+    container_name: miniblue
+    ports:
+      - "5566:4566"
+      - "5567:4567"
+    environment:
+      - PORT=4566
+      - LOG_LEVEL=info
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:4566/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+

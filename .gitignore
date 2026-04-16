@@ -1,1 +1,10 @@
 .env
+.claude
+.codex/
+.copilot/
+.cursor/
+.docs
+.pi/
+.planning
+planning
+AGENTS.md
