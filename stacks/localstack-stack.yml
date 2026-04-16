@@ -7,9 +7,10 @@ services:
     environment:
       - DEBUG=0
       - PERSISTENCE=0
+      - DOCKER_HOST=unix:///run/podman/podman.sock
     volumes:
       - "./volume:/var/lib/localstack"
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/run/podman/podman.sock:/var/run/docker.sock:ro"
     restart: unless-stopped
 
 
