@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+  hbbs:
+    container_name: rustdesk-hbbs
+    image: rustdesk/rustdesk-server:latest
+    command: hbbs -r rustdesk.svc.assistance.bg:21117
+    volumes:
+      - hbbs_data:/root
+    networks:
+      - rustdesk-net
+    ports:
+      - 21115:21115
+      - 21116:21116
+      - 21116:21116/udp
+      - 21118:21118
+    restart: unless-stopped
+
+  hbbr:
+    container_name: rustdesk-hbbr
+    image: rustdesk/rustdesk-server:latest
+    command: hbbr
+    volumes:
+      - hbbr_data:/root
+    networks:
+      - rustdesk-net
+    ports:
+      - 21117:21117
+      - 21119:21119
+    restart: unless-stopped
+
+volumes:
+  hbbs_data:
+    driver: local
+  hbbr_data:
+    driver: local
+
+networks:
+  rustdesk-net:
+    driver: bridge
