@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 
 services:
   hbbs:
@@ -6,14 +6,16 @@ services:
     image: rustdesk/rustdesk-server:latest
     command: hbbs -r rustdesk.svc.assistance.bg:21117
     volumes:
-      - hbbs_data:/root
+      - rustdesk_data:/root
     networks:
       - rustdesk-net
     ports:
-      - 21115:21115
-      - 21116:21116
-      - 21116:21116/udp
-      - 21118:21118
+      - "21115:21115/tcp"
+      - "21116:21116/tcp"
+      - "21116:21116/udp"
+      - "21118:21118/tcp"
+    depends_on:
+      - hbbr
     restart: unless-stopped
 
   hbbr:
@@ -21,18 +23,16 @@ services:
     image: rustdesk/rustdesk-server:latest
     command: hbbr
     volumes:
-      - hbbr_data:/root
+      - rustdesk_data:/root
     networks:
       - rustdesk-net
     ports:
-      - 21117:21117
-      - 21119:21119
+      - "21117:21117/tcp"
+      - "21119:21119/tcp"
     restart: unless-stopped
 
 volumes:
-  hbbs_data:
-    driver: local
-  hbbr_data:
+  rustdesk_data:
     driver: local
 
 networks:
